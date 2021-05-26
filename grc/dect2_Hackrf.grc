@@ -22,7 +22,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: ''
-    window_size: 1280, 1024
+    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -50,7 +50,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 432]
+    coordinate: [482, 545]
     rotation: 0
     state: enabled
 - name: VGA_bb_gain
@@ -71,7 +71,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 432]
+    coordinate: [618, 545]
     rotation: 0
     state: enabled
 - name: baseband_sampling_rate
@@ -110,6 +110,18 @@ blocks:
     coordinate: [10, 202]
     rotation: 0
     state: enabled
+- name: dect_occupied_bandwidth_0_0
+  id: variable
+  parameters:
+    comment: ''
+    value: 1.2*dect_symbol_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [429, 703]
+    rotation: 0
+    state: enabled
 - name: dect_symbol_rate
   id: variable
   parameters:
@@ -140,7 +152,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 432]
+    coordinate: [346, 545]
     rotation: 0
     state: enabled
 - name: options_low_pass
@@ -196,13 +208,13 @@ blocks:
     start: '-100'
     step: '1'
     stop: '100'
-    value: '20'
+    value: '0'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [224, 432]
+    coordinate: [210, 545]
     rotation: 0
     state: enabled
 - name: resample_ratio
@@ -241,21 +253,25 @@ blocks:
     label2: ch2
     label3: ''
     label4: ''
-    labels: '["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"]'
+    labels: '["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+      "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
+      "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38",
+      "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51",
+      "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"]'
     num_opts: '0'
     option1: '1883520000'
     option2: '1885248000'
     option3: '3'
     option4: '4'
-    options: '[1897344000, 1895616000, 1893888000, 1892160000, 1890432000, 1888704000, 
-      1886876000, 1885248000, 1883520000, 1881792000, 1899072000, 1900800000, 1902528000, 
-      1904256000, 1905984000, 1907712000, 1909440000, 1911168000, 1912896000, 1914624000, 
-      1916352000, 1918080000, 1919808000, 1921536000, 1923264000, 1924992000, 1926720000, 
-      1928448000, 1930176000, 1931904000, 1933632000, 1935360000, 1937088000, 1938816000, 
-      1940544000, 1942272000, 1944000000, 1945728000, 1947456000, 1949184000, 1950912000, 
-      1952640000, 1954368000, 1956096000, 1957824000, 1959552000, 1961280000, 1963008000, 
-      1964736000, 1966464000, 1968192000, 1969920000, 1971648000, 1973376000, 1975104000, 
-      1976832000, 2011392000, 2013120000, 2014848000, 2016576000, 2018304000, 2020032000, 
+    options: '[1897344000, 1895616000, 1893888000, 1892160000, 1890432000, 1888704000,
+      1886876000, 1885248000, 1883520000, 1881792000, 1899072000, 1900800000, 1902528000,
+      1904256000, 1905984000, 1907712000, 1909440000, 1911168000, 1912896000, 1914624000,
+      1916352000, 1918080000, 1919808000, 1921536000, 1923264000, 1924992000, 1926720000,
+      1928448000, 1930176000, 1931904000, 1933632000, 1935360000, 1937088000, 1938816000,
+      1940544000, 1942272000, 1944000000, 1945728000, 1947456000, 1949184000, 1950912000,
+      1952640000, 1954368000, 1956096000, 1957824000, 1959552000, 1961280000, 1963008000,
+      1964736000, 1966464000, 1968192000, 1969920000, 1971648000, 1973376000, 1975104000,
+      1976832000, 2011392000, 2013120000, 2014848000, 2016576000, 2018304000, 2020032000,
       2021760000, 2023488000]'
     orient: Qt.QVBoxLayout
     type: real
@@ -294,7 +310,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 484]
+    coordinate: [1338, 428]
+    rotation: 0
+    state: enabled
+- name: audio_sink_0_0
+  id: audio_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    device_name: ''
+    num_inputs: '1'
+    ok_to_block: 'True'
+    samp_rate: '48000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1312, 651]
     rotation: 0
     state: enabled
 - name: blocks_short_to_float_0
@@ -311,7 +344,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1064, 268]
+    coordinate: [969, 226]
+    rotation: 0
+    state: enabled
+- name: blocks_short_to_float_0_0
+  id: blocks_short_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '32768'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [995, 471]
     rotation: 0
     state: enabled
 - name: console_0
@@ -325,9 +375,23 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 344]
+    coordinate: [825, 353]
     rotation: 0
     state: enabled
+- name: console_1
+  id: console
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gui_hint: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [825, 474]
+    rotation: 0
+    state: true
 - name: dect2_packet_decoder_0
   id: dect2_packet_decoder
   parameters:
@@ -336,14 +400,32 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    rx_id: part_id
+    part_to_decode: '0'
+    rx_id: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 272]
+    coordinate: [500, 307]
     rotation: 0
-    state: enabled
+    state: true
+- name: dect2_packet_decoder_1
+  id: dect2_packet_decoder
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    part_to_decode: '1'
+    rx_id: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [497, 424]
+    rotation: 0
+    state: true
 - name: dect2_packet_receiver_0
   id: dect2_packet_receiver
   parameters:
@@ -356,7 +438,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 272]
+    coordinate: [202, 276]
     rotation: 0
     state: enabled
 - name: dect2_phase_diff_0
@@ -371,7 +453,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1188, 189]
+    coordinate: [1199, 144]
     rotation: 0
     state: enabled
 - name: freq_xlating_fir_filter_xxx_0
@@ -391,7 +473,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 96]
+    coordinate: [511, 96]
     rotation: 0
     state: enabled
 - name: mmse_resampler_xx_0
@@ -409,10 +491,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [985, 66]
+    coordinate: [1016, 16.0]
     rotation: 0
     state: true
-- name: rational_resampler
+- name: rational_resampler_base_xxx_0
   id: rational_resampler_base_xxx
   parameters:
     affinity: ''
@@ -428,9 +510,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 100]
+    coordinate: [763, 107]
     rotation: 0
-    state: enabled
+    state: true
 - name: rational_resampler_xxx_0
   id: rational_resampler_xxx
   parameters:
@@ -448,7 +530,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 456]
+    coordinate: [1068, 327]
+    rotation: 0
+    state: enabled
+- name: rational_resampler_xxx_0_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    fbw: '0'
+    interp: '6'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: ''
+    type: fff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 610]
     rotation: 0
     state: enabled
 - name: rtlsdr_source_0
@@ -820,23 +922,45 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 272]
+    coordinate: [789, 306]
+    rotation: 0
+    state: enabled
+- name: vocoder_g721_decode_bs_1
+  id: vocoder_g721_decode_bs
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [797, 396]
     rotation: 0
     state: enabled
 
 connections:
 - [blocks_short_to_float_0, '0', rational_resampler_xxx_0, '0']
+- [blocks_short_to_float_0_0, '0', rational_resampler_xxx_0_0, '0']
 - [dect2_packet_decoder_0, '0', vocoder_g721_decode_bs_0, '0']
 - [dect2_packet_decoder_0, log_out, console_0, in]
+- [dect2_packet_decoder_1, '0', vocoder_g721_decode_bs_1, '0']
+- [dect2_packet_decoder_1, log_out, console_1, in]
 - [dect2_packet_receiver_0, '0', dect2_packet_decoder_0, '0']
+- [dect2_packet_receiver_0, '0', dect2_packet_decoder_1, '0']
 - [dect2_packet_receiver_0, rcvr_msg_out, dect2_packet_decoder_0, rcvr_msg_in]
+- [dect2_packet_receiver_0, rcvr_msg_out, dect2_packet_decoder_1, rcvr_msg_in]
 - [dect2_phase_diff_0, '0', dect2_packet_receiver_0, '0']
-- [freq_xlating_fir_filter_xxx_0, '0', rational_resampler, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', rational_resampler_base_xxx_0, '0']
 - [mmse_resampler_xx_0, '0', dect2_phase_diff_0, '0']
-- [rational_resampler, '0', mmse_resampler_xx_0, '0']
+- [rational_resampler_base_xxx_0, '0', mmse_resampler_xx_0, '0']
 - [rational_resampler_xxx_0, '0', audio_sink_0, '0']
+- [rational_resampler_xxx_0_0, '0', audio_sink_0_0, '0']
 - [rtlsdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 - [vocoder_g721_decode_bs_0, '0', blocks_short_to_float_0, '0']
+- [vocoder_g721_decode_bs_1, '0', blocks_short_to_float_0_0, '0']
 
 metadata:
   file_format: 1

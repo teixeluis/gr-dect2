@@ -46,9 +46,10 @@ namespace gr {
        * class. dect2::packet_decoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make();
+      static sptr make(uint8_t part_to_decode);
 
       virtual void select_rx_part(uint32_t rx_id) = 0;
+      virtual void select_part_to_decode(uint8_t part_to_decode) = 0;
     };
 
   } // namespace dect2

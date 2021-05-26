@@ -9,6 +9,10 @@ parameters:
     label: Part RX ID
     dtype: int
     default: '0'
+-   id: part_to_decode
+    label: Part to Decode (0 - RFP, 1 - PP)
+    dtype: int
+    default: '1'
 
 inputs:
 -   domain: stream
@@ -26,8 +30,9 @@ outputs:
 
 templates:
     imports: import dect2
-    make: dect2.packet_decoder()
+    make: dect2.packet_decoder(${part_to_decode})
     callbacks:
     - select_rx_part(${rx_id})
+    - select_part_to_decode(${part_to_decode})
 
 file_format: 1

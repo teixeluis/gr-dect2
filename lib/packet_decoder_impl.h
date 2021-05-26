@@ -61,21 +61,23 @@ namespace gr {
             part_descriptor_item d_part_descriptor[MAX_PARTS];
             part_descriptor_item *d_cur_part;
             uint32_t d_selected_rx_id;
-
+            uint8_t d_part_to_decode;
 
             uint32_t decode_afield(uint8_t *field_data);
 
             int calculate_output_stream_length(const gr_vector_int &ninput_items);
             void msg_event_handler(pmt::pmt_t msg);
 
-            void print_parts(void);
+            void print_parts(part_type part_type);
+            void process_part_output(const uint8_t *in, uint8_t *out, part_descriptor_item *d_cur_part);
 
         public:            
 
-            packet_decoder_impl();
+            packet_decoder_impl(uint8_t part_to_decode);
             ~packet_decoder_impl();
 
             virtual void select_rx_part(uint32_t rx_id);
+            virtual void select_part_to_decode(uint8_t part_to_decode);
 
             int work(int noutput_items,
 		            gr_vector_int &ninput_items,

@@ -145,8 +145,6 @@ namespace gr {
         return true;
     }
 
-
-
     uint32_t packet_decoder_impl::decode_afield(uint8_t *field_data)
     {
 
@@ -222,17 +220,18 @@ namespace gr {
 
 
     packet_decoder::sptr
-    packet_decoder::make()
+    packet_decoder::make(uint8_t part_to_decode)
     {
       return gnuradio::get_initial_sptr
-        (new packet_decoder_impl());
+        (new packet_decoder_impl(part_to_decode));
     }
 
     
-    packet_decoder_impl::packet_decoder_impl()
-      : gr::tagged_stream_block("packet_decoder",
-               gr::io_signature::make(1, 1, sizeof(unsigned char)),
-               gr::io_signature::make(1, 1, sizeof(unsigned char)), std::string("packet_len"))
+    packet_decoder_impl::packet_decoder_impl(uint8_t part_to_decode)
+      : d_part_to_decode(part_to_decode),
+        gr::tagged_stream_block("packet_decoder",
+        gr::io_signature::make(1, 1, sizeof(unsigned char)),
+        gr::io_signature::make(1, 1, sizeof(unsigned char)), std::string("packet_len"))
     {
         set_tag_propagation_policy(TPP_DONT);
 
@@ -261,7 +260,8 @@ namespace gr {
     {
         if(pmt::dict_has_key( msg, pmt::mp("rcvr_msg_id")))
         {
-            pmt::pmt_t msg_id = pmt::dict_ref( msg, pmt::mp("rcvr_msg_id"), pmt::PMT_NIL); 
+            pmt::pmt_t msg_id = pmt::dict_ref( msg, pmt::mp("rcvr_msg_id"), pmt::PMT_NIL);
+
             if(pmt::eq(msg_id, pmt::mp("lost_part")))
             {                
                 //std::cout << "*********** LOST part ************" << std::endl;
@@ -274,8 +274,11 @@ namespace gr {
                 part_item->voice_present = false;                
                 part_item->log_update = false;
                 part_item->qt_rcvd = false;
-                if(part_item->part_id_rcvd == true)
-                    print_parts();
+
+                if(part_item->part_id_rcvd == true && part_item->type == d_part_to_decode)
+                {
+                    print_parts(d_part_to_decode == 0 ? _RFP_ : _PP_);
+                }
 
                 // Cleare part's pair                  
                 if(part_item->pair != NULL)
@@ -296,16 +299,17 @@ namespace gr {
         }       
     }
 
-    void packet_decoder_impl::print_parts(void)
+    void packet_decoder_impl::print_parts(part_type part_type)
     {
         std::ostringstream os;
         
         os << "===== AVAILABLE PARTS =====" << std::endl;
         for(uint32_t rx_id = 0; rx_id < MAX_PARTS; rx_id++)
         {
-            if(d_part_descriptor[rx_id].active == true)
+            part_descriptor_item *part_item = &d_part_descriptor[rx_id];
+
+            if(d_part_descriptor[rx_id].active == true && part_item->type == part_type)
             {
-                part_descriptor_item *part_item = &d_part_descriptor[rx_id];
                 if(d_selected_rx_id == rx_id)
                     os << "* ";
                 else
@@ -339,12 +343,61 @@ namespace gr {
         message_port_pub(pmt::mp("log_out"), msg);    
     }
 
+    void packet_decoder_impl::process_part_output(const uint8_t *in, uint8_t *out, part_descriptor_item *d_cur_part)
+    {
+        uint8_t b_field[40];
+        uint8_t tmp_byte;
+        uint32_t b_field_byte_cnt = 0;
+        
+        for(uint32_t i = 0; i < B_FIELD_BITS; i++)
+        {
+            if(i && ((i & 0x7) == 0))
+                b_field[b_field_byte_cnt++] = tmp_byte;   
+            tmp_byte = (tmp_byte << 1) | (*in++ & 0x1);
+        }
+
+        b_field[b_field_byte_cnt] = tmp_byte;   
+
+
+        uint8_t xcrc = calc_xcrc(b_field);
+
+        uint8_t x_field = 0;
+        x_field |= ((*in++ & 0x1) << 3);
+        x_field |= ((*in++ & 0x1) << 2);
+        x_field |= ((*in++ & 0x1) << 1);
+        x_field |= (*in & 0x1); 
+
+        if(xcrc == x_field)
+        {                               
+            uint8_t *ptr = b_field;                       
+            uint32_t whitener_offset = d_cur_part->frame_number % 8;         
+            uint8_t descrt_byte;
+
+            for(uint32_t i = 0; i < 40; i++)
+            {
+                descrt_byte = *ptr++ ^ scrt[whitener_offset][i % 31];
+                *out++ = (descrt_byte >> 4) & 0xF;
+                *out++ =  descrt_byte & 0xF;
+            }
+        }
+        else
+        {
+            for(uint32_t i = 0; i < 80; i++)
+                *out++ = 0;
+        }        
+    }
+
     void packet_decoder_impl::select_rx_part(uint32_t rx_id)
     {
         d_selected_rx_id = rx_id;
     }
 
-    int packet_decoder_impl::work (int noutput_items,
+    void packet_decoder_impl::select_part_to_decode(uint8_t part_to_decode)
+    {
+        d_part_to_decode = part_to_decode;
+    }
+
+    int packet_decoder_impl::work(int noutput_items,
                        gr_vector_int &ninput_items,
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
@@ -467,70 +520,33 @@ namespace gr {
       
         if(d_cur_part->log_update && d_cur_part->part_id_rcvd)
         {
-            print_parts();
+            print_parts(d_part_to_decode == 0 ? _RFP_ : _PP_);
             d_cur_part->log_update = false;
         }
-        
 
         if(rx_id == d_selected_rx_id)
         {
-            if(d_cur_part->active && d_cur_part->voice_present && d_cur_part->qt_rcvd)
-            {              
-                uint8_t b_field[40];
-                uint8_t tmp_byte;
-                uint32_t b_field_byte_cnt = 0;
-                
-            
-                for(uint32_t i = 0; i < B_FIELD_BITS; i++)
-                {
-                    if(i && ((i & 0x7) == 0))
-                      b_field[b_field_byte_cnt++] = tmp_byte;   
-                    tmp_byte = (tmp_byte << 1) | (*in++ & 0x1);
-                }
-
-                b_field[b_field_byte_cnt] = tmp_byte;   
-
-
-                uint8_t xcrc = calc_xcrc(b_field);
-
-                uint8_t x_field = 0;
-                x_field |= ((*in++ & 0x1) << 3);
-                x_field |= ((*in++ & 0x1) << 2);
-                x_field |= ((*in++ & 0x1) << 1);
-                x_field |= (*in & 0x1); 
-
-                if(xcrc == x_field)
-                {                               
-                    uint8_t *ptr = b_field;                       
-                    uint32_t whitener_offset = d_cur_part->frame_number % 8;         
-                    uint8_t descrt_byte;
-
-                    for(uint32_t i = 0; i < 40; i++)
-                    {
-                        descrt_byte = *ptr++ ^ scrt[whitener_offset][i % 31];
-                        *out++ = (descrt_byte >> 4) & 0xF;
-                        *out++ =  descrt_byte & 0xF;
-                    }
-        
-                    noutput_items = 80;
-                }
-                else
-                {
-                    for(uint32_t i = 0; i < 80; i++)
-                        *out++ = 0;
-                    noutput_items = 80; 
-                }
+            if(d_cur_part->active && d_cur_part->voice_present && d_cur_part->qt_rcvd && d_part_to_decode == _PP_)
+            {          
+                process_part_output(in, out, d_cur_part);
+            }
+            else if(d_cur_part->pair != NULL && d_cur_part->pair->active && d_cur_part->pair->voice_present && d_cur_part->pair->qt_rcvd && d_part_to_decode == _RFP_)
+            {
+                process_part_output(in, out, d_cur_part->pair);
             }
             else
             {
-                for(uint32_t i = 0; i < 80; i++)
+                for(uint32_t i = 0; i < 80; i++) {
                   *out++ = 0;
-                noutput_items = 80;
+                }
             }
 
+            noutput_items = 80;
         } 
-        else      
-            noutput_items = 0;   
+        else
+        {
+            noutput_items = 0;
+        }    
       
         return noutput_items;
     }
